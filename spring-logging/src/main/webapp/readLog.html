@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>获取系统日志信息</title>
+	<!-- 引入jquery -->
+	<script type="text/javascript" src="jquery.min.js"></script>
+	
+	<script type="text/javascript">
+	var i=0;
+	var line=0;
+	$(function(){
+		$("#readLine").click(function(){
+			line=1;//每次读取一行日志信息
+			c = window.setInterval("getLog()",1000); //间隔1秒去触发ajax
+		});
+		$("#readLines").click(function(){
+			line=2;//每次读取两行日志信息
+			c = window.setInterval("getLog()",1000); //间隔1秒去触发ajax
+		});
+	});
+	function getLog(){
+		   $.ajax({
+				url:"http://localhost:8080/spring-logging/log/logging.do",
+				type:"post",
+				data:{"row":i,"line":line},//从第i行开始读日志，每次读line行
+				dataType:"json",
+				success:function(result){
+					if(result.status==0){
+						$("#log").append("读取日志信息完成！！！"); 
+				 		window.clearInterval(c); //关闭ajax轮询请求
+				 	}
+					if(i%16==0){
+						//日志信息分页显示
+						$("#log").html("第"+(i+16)/16+"页日志信息............"+"<br / >")
+					}
+					i=i+line;
+					$("#log").append(result.data); //追加读取到的日志信息
+				},
+				error:function(){
+				 	window.clearInterval(c); //获取日志失败，结束请求
+				}
+		});	          
+	};
+	</script>
+</head>
+	<body>
+		<!-- 按钮区-->
+		<div>
+			<input type="button" id="readLine" value='单行读取系统日志信息' />
+			<input type="button" id="readLines" value='多行读取系统日志信息' />
+		</div>
+		<!-- 日志信息显示区 -->
+		<div id="log" >
+		
+		</div>
+	</body>
+</html>
+
+	
